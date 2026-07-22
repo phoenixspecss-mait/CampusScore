@@ -1,4 +1,4 @@
-import 'package:campusscore/views/notes_view.dart';
+import 'package:campusscore/views/main_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,18 +9,26 @@ import 'package:campusscore/views/Register_Login_View.dart';
 // import 'package:campusscore/views/home_view.dart';
 import 'firebase_options.dart';
 
+import 'package:provider/provider.dart';
+import 'package:campusscore/services/db/database_provider.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(
-    MaterialApp(
-      title: 'CampusScore',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFFF6B00)),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => DatabaseProvider()),
+      ],
+      child: MaterialApp(
+        title: 'CampusScore',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFFF6B00)),
+        ),
+        home: const AuthGate(),
       ),
-      home: const AuthGate(),
     ),
   );
 }
@@ -60,8 +68,7 @@ class AuthGate extends StatelessWidget {
         }
 
         // 4. Logged In & Verified -> Main App Content
-        // Replace 'HomeView' with whatever your main screen is called now (e.g., notesView)
-        return const NotesView();
+        return const MainLayout();
       },
     );
   }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:campusscore/services/auth/auth_exceptions.dart';
 import 'package:campusscore/services/auth/auth_service.dart';
+import 'package:campusscore/main.dart'; // For AuthGate
 
 class Register_Login_View extends StatefulWidget {
   const Register_Login_View({super.key});
@@ -463,7 +464,11 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
       _timer?.cancel();
       if (mounted) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          Navigator.of(context).pushNamedAndRemoveUntil('/home/', (_) => false);
+          // Push back to AuthGate, which will now see the verified status and show MainLayout
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const AuthGate()),
+            (route) => false,
+          );
         });
       }
     }
