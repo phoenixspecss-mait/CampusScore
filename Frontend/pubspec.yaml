@@ -1,0 +1,58 @@
+name: campusscore
+description: "A platform for Models"
+publish_to: 'none' 
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: ^3.8.0
+  firebase_auth: ^5.3.1
+  firebase_database: ^11.0.0
+  provider: ^6.1.5+1
+  google_sign_in: ^6.2.1
+  google_maps_flutter: ^2.9.0
+  intl: ^0.19.0
+  cupertino_icons: ^1.0.8
+  sqflite: ^2.4.2
+  path_provider: ^2.1.5
+  path: ^1.9.1
+  geolocator: ^13.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.13.1
+  flutter_lints: ^5.0.0      # FIX: Moved back under dev_dependencies
+  test: ^1.26.2              # FIX: Moved back under dev_dependencies
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/campusscore_icon.png"
+  adaptive_icon_background: "#FFFFFF" 
+  adaptive_icon_foreground: "assets/images/campusscore_icon.png"
+
+flutter:
+  uses-material-design: true
+  fonts:
+    - family: medifont
+      fonts:
+        - asset: assets/fonts/Outfit-VariableFont_wght.ttf
+    - family: medifont2
+      fonts:
+        - asset: assets/fonts/BBHHegarty-Regular.ttf
+    - family: Plus Jakarta Sans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-VariableFont_wght.ttf
+  assets:
+    - assets/images/
+
+# FIX: Added the override here to force the stable Google Maps Android library 
+# and bypass the Heatmap/Kotlin compiler crash
+dependency_overrides:
+  google_maps_flutter_android: 2.18.1
