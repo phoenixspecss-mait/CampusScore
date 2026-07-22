@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:campusscore/services/auth/auth_provider.dart';
 import 'package:campusscore/services/auth/auth_exceptions.dart';
 import 'package:campusscore/services/auth/auth_user.dart';
@@ -121,23 +122,35 @@ class FirebaseAuthProvider implements AuthProvider {
   @override
   Future<AuthUser> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn(
-        scopes: ['email'],
-        // FIX: Replace this with your project's actual Web Client ID from your json file
-        serverClientId:
-            '904527835909-fmh8bg5b911fo8vqtoe7uiugue7gqgkj.apps.googleusercontent.com',
-      ).signIn();
-      if (googleUser == null) throw GoogleSignInCancelledException();
+      if (kIsWeb) {
+        // Use Firebase Auth native web popup
+        final googleProvider = GoogleAuthProvider();
+        final userCredential = await FirebaseAuth.instance.signInWithPopup(googleProvider);
+        if (userCredential.user != null) {
+          return AuthUser.fromFirebase(userCredential.user!);
+        } else {
+          throw GoogleSignInCancelledException();
+        }
+      } else {
+        // Mobile implementation using google_sign_in
+        final GoogleSignInAccount? googleUser = await GoogleSignIn(
+          scopes: ['email'],
+          serverClientId:
+              '904527835909-fmh8bg5b911fo8vqtoe7uiugue7gqgkj.apps.googleusercontent.com',
+        ).signIn();
+        if (googleUser == null) throw GoogleSignInCancelledException();
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+        final GoogleSignInAuthentication googleAuth =
+            await googleUser.authentication;
 
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
 
-      await FirebaseAuth.instance.signInWithCredential(credential);
+        await FirebaseAuth.instance.signInWithCredential(credential);
+        return currentUser!;
+      }
 
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw GenericAuthException();
