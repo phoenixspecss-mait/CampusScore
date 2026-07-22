@@ -303,6 +303,7 @@ class _NotesViewState extends State<NotesView> {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf', 'csv'],
+        withData: true, // Crucial for getting bytes on Web/Mobile
       );
 
       if (result != null) {
@@ -332,15 +333,19 @@ class _NotesViewState extends State<NotesView> {
           ),
         );
 
-        // 3. Feed the actual file to the real ML API
-        if (result.files.single.path == null) {
+        // 3. Feed the actual file bytes to the real ML API
+        final fileBytes = result.files.single.bytes;
+        final fileName = result.files.single.name;
+        
+        if (fileBytes == null) {
           if (context.mounted) Navigator.of(context).pop();
-          throw Exception("Could not read file path.");
+          throw Exception("Could not read file bytes. Make sure the file isn't corrupted.");
         }
         
         try {
           final scoreData = await ApiService().uploadStatement(
-            filePath: result.files.single.path!,
+            fileBytes: fileBytes,
+            fileName: fileName,
             trustCircleVouch: dbProvider.vouches.length.toDouble(),
           );
 

@@ -46,15 +46,20 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> uploadStatement({
-    required String filePath,
+    required List<int> fileBytes,
+    required String fileName,
     required double trustCircleVouch,
   }) async {
     final url = Uri.parse('$_baseUrl/upload_statement');
     try {
       var request = http.MultipartRequest('POST', url);
 
-      // Add the file
-      request.files.add(await http.MultipartFile.fromPath('file', filePath));
+      // Add the file from bytes (works on Web and Mobile)
+      request.files.add(http.MultipartFile.fromBytes(
+        'file', 
+        fileBytes,
+        filename: fileName,
+      ));
 
       // Add the other form field
       request.fields['trust_circle_vouch'] = trustCircleVouch.toString();
