@@ -7,11 +7,12 @@ class ApiService {
 
   //python3 -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
-  // TODO(Deployment): Uncomment and update this URL once backend is on Render!
-  // static const String _baseUrl = 'https://your-backend.onrender.com';
-
-  static const String _baseUrl = 'http://192.168.31.176:8000';
-  //static const String _baseUrl = 'http://10.0.2.2:8000';
+  // The live Render backend URL
+  static const String _baseUrl = 'https://campusscore.onrender.com';
+  
+  // Local testing URLs
+  // static const String _baseUrl = 'http://192.168.31.176:8000';
+  // static const String _baseUrl = 'http://10.0.2.2:8000';
 
   Future<Map<String, dynamic>> calculateScore({
     required double amtIncomeTotal,
