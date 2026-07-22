@@ -162,7 +162,7 @@ class _campusscoreState extends State<Register_Login_View> {
             const SizedBox(height: 6),
 
             Text(
-              'Safe rides for the people you love.',
+              'The credit score built for students.',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,

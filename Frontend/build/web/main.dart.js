@@ -42416,7 +42416,7 @@ case 2:return A.z(o.at(-1),r)}})
 return A.B($async$mj,r)},
 K(a){var s,r,q,p,o,n,m,l,k,j=this,i=null,h=A.c9(20),g=t.sq,f=A.c([new A.cQ(0,B.bk,B.b6,B.cr,10)],g)
 f=A.db(i,i,B.t,i,i,new A.ca(i,B.Ep,A.hI(B.b6,1.5),h,f,i,B.a_),i,88,i,i,i,i,88)
-h=A.c_("Safe rides for the people you love.",i,i,i,A.eP(i,i,B.dl,i,i,i,i,i,i,i,i,14,i,i,B.W,i,i,!0,i,i,i,i,i,i,i,i),i,i)
+h=A.c_("The credit score built for students.",i,i,i,A.eP(i,i,B.dl,i,i,i,i,i,i,i,i,14,i,i,B.W,i,i,!0,i,i,i,i,i,i,i,i),i,i)
 s=t.p
 r=A.eu(A.c([A.he(A.a24(B.eo,10,24,1),1),A.c_("Login or Sign Up",i,i,i,A.eP(i,i,B.fL,i,i,i,i,i,i,i,i,13,i,i,B.W,i,i,!0,i,i,i,i,i,i,i,i),i,i),A.he(A.a24(B.eo,24,10,1),1)],s),B.J,B.B,B.N,0)
 q=A.c9(16)
