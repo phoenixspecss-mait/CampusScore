@@ -2,17 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  //cd Documents/CampusScore/CsScore-backend
-  //python3 -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
-
-  //python3 -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
-
-  // The live Render backend URL
   static const String _baseUrl = 'https://campusscore.onrender.com';
-  
-  // Local testing URLs
-  // static const String _baseUrl = 'http://192.168.31.176:8000';
-  // static const String _baseUrl = 'http://10.0.2.2:8000';
 
   Future<Map<String, dynamic>> calculateScore({
     required double amtIncomeTotal,
@@ -55,11 +45,9 @@ class ApiService {
       var request = http.MultipartRequest('POST', url);
 
       // Add the file from bytes (works on Web and Mobile)
-      request.files.add(http.MultipartFile.fromBytes(
-        'file', 
-        fileBytes,
-        filename: fileName,
-      ));
+      request.files.add(
+        http.MultipartFile.fromBytes('file', fileBytes, filename: fileName),
+      );
 
       // Add the other form field
       request.fields['trust_circle_vouch'] = trustCircleVouch.toString();
