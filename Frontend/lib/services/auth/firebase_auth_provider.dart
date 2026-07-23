@@ -125,6 +125,13 @@ class FirebaseAuthProvider implements AuthProvider {
       if (kIsWeb) {
         // Use Firebase Auth native web popup
         final googleProvider = GoogleAuthProvider();
+        googleProvider.addScope('email');
+        googleProvider.setCustomParameters({
+          'client_id':
+              '904527835909-fmh8bg5b911fo8vqtoe7uiugue7gqgkj.apps.googleusercontent.com',
+          'prompt': 'select_account',
+        });
+        
         final userCredential = await FirebaseAuth.instance.signInWithPopup(googleProvider);
         if (userCredential.user != null) {
           return AuthUser.fromFirebase(userCredential.user!);
