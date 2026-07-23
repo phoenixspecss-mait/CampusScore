@@ -118,16 +118,11 @@ class _campusscoreState extends State<Register_Login_View> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: ResponsiveLayout(
-        maxWidth: 500,
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-            const SizedBox(height: 72),
+  Widget _buildForm() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+        const SizedBox(height: 72),
 
             // campusscore Logo Container
             Container(
@@ -403,10 +398,68 @@ class _campusscoreState extends State<Register_Login_View> {
                 ),
               ),
             ),
-            const SizedBox(height: 40),
-          ],
-        ),
+          const SizedBox(height: 40),
+        ],
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDesktop = MediaQuery.of(context).size.width >= 800;
+    final form = _buildForm();
+
+    if (!isDesktop) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: ResponsiveLayout(maxWidth: 500, child: form),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Row(
+        children: [
+          Expanded(
+            flex: 6,
+            child: Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/auth_hero.png'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xB3000000), Colors.transparent], // Black with 70% opacity
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                  ),
+                ),
+                child: const Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Padding(
+                    padding: EdgeInsets.all(48.0),
+                    child: Text(
+                      "Empowering students\nto build their financial future.",
+                      style: TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold, height: 1.2),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 4,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: form,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

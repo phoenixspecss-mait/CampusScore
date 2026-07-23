@@ -47,53 +47,76 @@ class _NotesViewState extends State<NotesView> {
     final dbProvider = context.watch<DatabaseProvider>();
     final int currentScore = dbProvider.userScore?['final_score'] ?? 0;
     final String scoreStatus = currentScore > 700 ? "Excellent" : (currentScore > 500 ? "Growing" : "Needs Work");
-    final bool isLoading = dbProvider.isLoading;
+    final bool isDesktop = MediaQuery.of(context).size.width >= 800;
+
+    Widget leftSide = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildScoreHeader(currentScore, scoreStatus),
+        if (currentScore > 0) ...[
+          const SizedBox(height: 32),
+          const Text(
+            'How to Improve',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildActionableFeedback(dbProvider.userScore),
+        ]
+      ],
+    );
+
+    Widget rightSide = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (currentScore == 0) ...[
+          _buildColdStartButton(context, dbProvider),
+        ] else ...[
+          const Text(
+            'What\'s building your score?',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildHabitsList(),
+        ]
+      ],
+    );
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50, // Light background
+      backgroundColor: Colors.grey.shade50,
       body: ResponsiveLayout(
-        maxWidth: 800,
+        maxWidth: 1200,
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildScoreHeader(currentScore, scoreStatus),
-              if (currentScore == 0) ...[
-                const SizedBox(height: 16),
-                _buildColdStartButton(context, dbProvider),
-                const SizedBox(height: 32),
-              ] else ...[
-                const SizedBox(height: 32),
-                const Text(
-                  'What\'s building your score?',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+            padding: const EdgeInsets.all(24.0),
+            child: isDesktop 
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 5, child: leftSide),
+                    const SizedBox(width: 40),
+                    Expanded(flex: 7, child: rightSide),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    leftSide,
+                    const SizedBox(height: 32),
+                    rightSide,
+                    const SizedBox(height: 40),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                _buildHabitsList(),
-                const SizedBox(height: 32),
-                const Text(
-                  'How to Improve',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _buildActionableFeedback(dbProvider.userScore),
-              ],
-              const SizedBox(height: 40),
-            ],
           ),
         ),
-      ),
       ),
     );
   }

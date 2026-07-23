@@ -150,41 +150,82 @@ class _MainLayoutState extends State<MainLayout> {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'CampusScore',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-            color: Colors.black87,
-            letterSpacing: 0.5,
-          ),
-        ),
-        actions: [
-          GestureDetector(
-            onTap: () => _showProfileBottomSheet(context),
-            child: Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: CircleAvatar(
-                radius: 18,
-                backgroundColor: const Color(0xFFFF6B00).withOpacity(0.15),
-                child: const Icon(
-                  Icons.person_rounded,
-                  color: Color(0xFFFF6B00),
-                  size: 20,
-                ),
+      appBar: isDesktop 
+        ? null 
+        : AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            title: const Text(
+              'CampusScore',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: Colors.black87,
+                letterSpacing: 0.5,
               ),
             ),
+            actions: [
+              GestureDetector(
+                onTap: () => _showProfileBottomSheet(context),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: const Color(0xFFFF6B00).withOpacity(0.15),
+                    child: const Icon(
+                      Icons.person_rounded,
+                      color: Color(0xFFFF6B00),
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
       body: isDesktop
           ? Row(
               children: [
                 NavigationRail(
                   backgroundColor: Colors.white,
+                  extended: MediaQuery.of(context).size.width >= 1000,
+                  minExtendedWidth: 200,
+                  leading: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF6B00),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'C',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        if (MediaQuery.of(context).size.width >= 1000) ...[
+                          const SizedBox(width: 12),
+                          const Text(
+                            'CampusScore',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ]
+                      ],
+                    ),
+                  ),
                   selectedIndex: _currentIndex,
                   onDestinationSelected: (index) => setState(() => _currentIndex = index),
                   labelType: NavigationRailLabelType.all,
@@ -206,6 +247,26 @@ class _MainLayoutState extends State<MainLayout> {
                       label: Text('Trust Circle'),
                     ),
                   ],
+                  trailing: Expanded(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 24.0),
+                        child: GestureDetector(
+                          onTap: () => _showProfileBottomSheet(context),
+                          child: CircleAvatar(
+                            radius: 20,
+                            backgroundColor: const Color(0xFFFF6B00).withOpacity(0.15),
+                            child: const Icon(
+                              Icons.person_rounded,
+                              color: Color(0xFFFF6B00),
+                              size: 24,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
                 VerticalDivider(thickness: 1, width: 1, color: Colors.grey.shade200),
                 Expanded(child: _screens[_currentIndex]),
