@@ -11,7 +11,9 @@ class ApiService {
     required double trustCircleVouch,
     required double feePunctuality,
   }) async {
-    final url = Uri.parse('$_baseUrl/simulate'); // Using /simulate instead of /score just in case
+    final url = Uri.parse(
+      '$_baseUrl/simulate',
+    ); // Using /simulate instead of /score just in case
     try {
       final response = await http.post(
         url,
@@ -20,11 +22,16 @@ class ApiService {
           'AMT_INCOME_TOTAL': amtIncomeTotal,
           'NAME_EDUCATION_TYPE': 'Secondary / secondary special',
           'AGE_YEARS': 20, // Default for simulator
-          'fee_payment_punctuality': feePunctuality * 100, // Slider is 0-1, backend expects ~0-100
-          'subscription_regularity': feePunctuality * 100, // Approximating using fee punctuality
-          'savings_consistency': savingsCadence * 100, // Slider is 0-1, backend expects ~0-100
-          'gig_income_stability': (daysEmployed / 1000) * 100, // Slider is 0-1000, map to 0-100
-          'trust_circle_vouch_score': (trustCircleVouch / 3.0) * 100, // Slider is 0-3, map to 0-100
+          'fee_payment_punctuality':
+              feePunctuality * 100, // Slider is 0-1, backend expects ~0-100
+          'subscription_regularity':
+              feePunctuality * 100, // Approximating using fee punctuality
+          'savings_consistency':
+              savingsCadence * 100, // Slider is 0-1, backend expects ~0-100
+          'gig_income_stability':
+              (daysEmployed / 1000) * 100, // Slider is 0-1000, map to 0-100
+          'trust_circle_vouch_score':
+              (trustCircleVouch / 3.0) * 100, // Slider is 0-3, map to 0-100
           'AMT_CREDIT': 0,
           'on_time_repayment_rate': 0,
           'is_returning_applicant': 0,
@@ -34,7 +41,9 @@ class ApiService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Failed to calculate score: ${response.statusCode} - ${response.body}');
+        throw Exception(
+          'Failed to calculate score: ${response.statusCode} - ${response.body}',
+        );
       }
     } catch (e) {
       throw Exception('Error connecting to model API: $e');
