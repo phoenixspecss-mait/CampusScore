@@ -102,6 +102,32 @@ FEATURE_MESSAGES = {
 }
 
 
+CATEGORY_KEYWORDS = {
+    "rent": ["RENT", "LANDLORD"],
+    "subscription": ["NETFLIX", "SPOTIFY", "PRIME", "HOTSTAR", "SUBSCRIPTION"],
+    "fee": ["FEE", "TUITION", "COLLEGE"],
+    "grocery": ["ZEPTO", "BLINKIT", "BIGBASKET", "GROCERY", "SUPERMARKET"],
+    "fuel": ["PETROL", "HPCL", "IOCL", "BPCL", "FUEL"],
+    "pharmacy": ["PHARMACY", "APOLLO", "MEDPLUS", "CHEMIST"],
+}
+
+# Simple in-memory store for unmatched transactions awaiting a user tag.
+# Keyed by a transaction id so the frontend can reference them later.
+# NOTE: in-memory only -- resets if the server restarts. Fine for a
+# hackathon demo, would need a real database for production.
+PENDING_TRANSACTIONS = {}
+_next_txn_id = 0
+
+
+def classify_line(line: str):
+    """Return the matched category name, or None if nothing matched."""
+    upper_line = line.upper()
+    for category, keywords in CATEGORY_KEYWORDS.items():
+        if any(kw in upper_line for kw in keywords):
+            return category
+    return None
+
+
 def explain_factors(top_factors, is_returning_applicant=0):
     explanations = []
     for f in top_factors:
@@ -212,6 +238,10 @@ async def upload_statement(file: UploadFile = File(...), trust_circle_vouch_scor
     total_debits = 0.0
     dates_found = set()
     fee_punctuality = 50.0
+    category_totals = {cat: 0.0 for cat in CATEGORY_KEYWORDS}
+    unmatched_ids = []
+
+    global _next_txn_id
 
     with pdfplumber.open(io.BytesIO(content)) as pdf:
         for page in pdf.pages:
@@ -229,9 +259,26 @@ async def upload_statement(file: UploadFile = File(...), trust_circle_vouch_scor
                 if " DR " in line or "/DR/" in line:
                     amt_match = re.search(r"(\d+\.\d{2})", line)
                     if amt_match:
-                        total_debits += float(amt_match.group(1))
-                        if "Rent" in line or "Subscription" in line or "Fee" in line:
-                            fee_punctuality = min(100.0, fee_punctuality + 5.0)
+                        amt = float(amt_match.group(1))
+                        total_debits += amt
+
+                        category = classify_line(line)
+                        if category:
+                            category_totals[category] += amt
+                            if category in ("rent", "subscription", "fee"):
+                                fee_punctuality = min(100.0, fee_punctuality + 5.0)
+                        else:
+                            # No keyword matched -- park it for the user to
+                            # tag manually instead of silently dropping it.
+                            txn_id = f"txn_{_next_txn_id}"
+                            _next_txn_id += 1
+                            PENDING_TRANSACTIONS[txn_id] = {
+                                "amount": amt,
+                                "line_text": line.strip(),
+                                "tagged": False,
+                                "category": None,
+                            }
+                            unmatched_ids.append(txn_id)
 
     savings_consistency = 50.0
     if total_income > 0:
@@ -257,7 +304,45 @@ async def upload_statement(file: UploadFile = File(...), trust_circle_vouch_scor
 
     result = score_and_explain(extracted_profile)
     result["extracted_data"] = extracted_profile
+    result["category_totals"] = category_totals
+    # Frontend should show a dialog per id here: "who was this to, and why?"
+    result["unmatched_transactions"] = [
+        {"id": tid, **PENDING_TRANSACTIONS[tid]} for tid in unmatched_ids
+    ]
     return result
+
+
+class TransactionTag(BaseModel):
+    purpose: str = Field(..., example="Paid friend back for lunch")
+
+
+@app.post("/tag_transaction/{txn_id}")
+def tag_transaction(txn_id: str, tag: TransactionTag):
+    """
+    Called after the user answers the 'who was this to / what was it for'
+    dialog for a transaction that didn't match any keyword automatically.
+
+    NOTE: this is self-reported by the user, not verified from the document,
+    so it should be treated as lower-confidence signal than keyword-matched
+    transactions -- worth reflecting that in how the frontend weights it.
+    """
+    if txn_id not in PENDING_TRANSACTIONS:
+        return {"error": "Unknown transaction id."}
+
+    category = classify_line(tag.purpose) or "other"
+    PENDING_TRANSACTIONS[txn_id]["tagged"] = True
+    PENDING_TRANSACTIONS[txn_id]["category"] = category
+    PENDING_TRANSACTIONS[txn_id]["user_purpose"] = tag.purpose
+
+    return {"id": txn_id, "category": category, "source": "user_tagged"}
+
+
+@app.get("/pending_transactions")
+def get_pending_transactions():
+    """All transactions still waiting on a user tag."""
+    return {
+        tid: t for tid, t in PENDING_TRANSACTIONS.items() if not t["tagged"]
+    }
 
 
 @app.get("/")
