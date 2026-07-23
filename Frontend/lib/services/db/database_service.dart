@@ -75,4 +75,41 @@ class DatabaseService {
       throw Exception('Error getting vouches: $e');
     }
   }
+
+  // Find a user by their Campus ID (first 8 chars of UID)
+  Future<Map<String, dynamic>?> findUserByCampusId(String campusId) async {
+    try {
+      final snapshot = await _db.ref('users')
+          .orderByKey()
+          .startAt(campusId.toUpperCase())
+          .endAt('${campusId.toUpperCase()}\uf8ff')
+          .limitToFirst(1)
+          .get();
+      
+      if (snapshot.exists) {
+        final data = snapshot.value as Map<dynamic, dynamic>;
+        final uid = data.keys.first;
+        final userData = data[uid] as Map<dynamic, dynamic>;
+        
+        String name = "Peer (${campusId.toUpperCase()})";
+        if (userData['profile'] != null) {
+          name = userData['profile']['name'] ?? name;
+        }
+        
+        int score = 400; // default score if none found
+        if (userData['score'] != null) {
+          score = userData['score']['score'] ?? userData['score']['final_score'] ?? score;
+        }
+        
+        return {
+          'uid': uid,
+          'name': name,
+          'score': score,
+        };
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Error finding user: $e');
+    }
+  }
 }

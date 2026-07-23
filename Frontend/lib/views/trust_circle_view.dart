@@ -108,21 +108,36 @@ class _TrustCircleViewState extends State<TrustCircleView> {
 
               final user = AuthService.firebase().currentUser;
               if (user != null) {
-                final newVouch = {
-                  'name': 'Peer (${_inviteController.text.toUpperCase()})',
-                  'relation': 'Peer / Batchmate',
-                  'score': 600 + Random().nextInt(250),
-                  'status': 'Active Vouch',
-                };
-                if (context.mounted) {
-                  await context.read<DatabaseProvider>().addVouch(user.uid, newVouch);
+                final campusId = _inviteController.text.trim();
+                final peerData = await context.read<DatabaseProvider>().findUserByCampusId(campusId);
+                
+                if (peerData != null) {
+                  final newVouch = {
+                    'name': peerData['name'],
+                    'relation': 'Peer / Batchmate',
+                    'score': peerData['score'],
+                    'status': 'Active Vouch',
+                  };
+                  if (context.mounted) {
+                    await context.read<DatabaseProvider>().addVouch(user.uid, newVouch);
+                  }
+                  
+                  _inviteController.clear();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Vouch successfully added to your Trust Circle!")),
+                    );
+                  }
+                } else {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Campus ID not found. Please check the ID and try again."),
+                        backgroundColor: Colors.redAccent,
+                      ),
+                    );
+                  }
                 }
-              }
-              _inviteController.clear();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Vouch successfully added to your Trust Circle!")),
-                );
               }
             },
             style: ElevatedButton.styleFrom(
