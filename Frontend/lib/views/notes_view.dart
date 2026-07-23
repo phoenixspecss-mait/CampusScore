@@ -45,7 +45,7 @@ class _NotesViewState extends State<NotesView> {
   @override
   Widget build(BuildContext context) {
     final dbProvider = context.watch<DatabaseProvider>();
-    final int currentScore = dbProvider.userScore?['final_score'] ?? 0;
+    final int currentScore = dbProvider.userScore?['score'] ?? dbProvider.userScore?['final_score'] ?? 0;
     final String scoreStatus = currentScore > 700 ? "Excellent" : (currentScore > 500 ? "Growing" : "Needs Work");
     final bool isDesktop = MediaQuery.of(context).size.width >= 1024;
 
@@ -53,6 +53,25 @@ class _NotesViewState extends State<NotesView> {
     Widget mobileLeftSide = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Expanded(
+              child: Text(
+                'Financial Overview',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.black87, letterSpacing: -0.5),
+              ),
+            ),
+            IconButton(
+              onPressed: dbProvider.isLoading ? null : () => _pickAndUploadStatement(context, dbProvider),
+              icon: const Icon(Icons.upload_file_rounded, color: Color(0xFFFF6B00)),
+              style: IconButton.styleFrom(
+                backgroundColor: const Color(0xFFFF6B00).withOpacity(0.1),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
         _buildScoreHeader(currentScore, scoreStatus),
         if (currentScore > 0) ...[
           const SizedBox(height: 32),
@@ -102,14 +121,29 @@ class _NotesViewState extends State<NotesView> {
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Financial Overview',
-                      style: TextStyle(
-                        fontSize: 36, // Scaled up typography for desktop
-                        fontWeight: FontWeight.w800,
-                        color: Colors.black87,
-                        letterSpacing: -0.5,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Financial Overview',
+                          style: TextStyle(
+                            fontSize: 36, // Scaled up typography for desktop
+                            fontWeight: FontWeight.w800,
+                            color: Colors.black87,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: dbProvider.isLoading ? null : () => _pickAndUploadStatement(context, dbProvider),
+                          icon: const Icon(Icons.upload_file_rounded, color: Colors.white),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFF6B00),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          label: const Text("Upload Statement", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 32),
                     _buildDesktopMetricsRow(currentScore, scoreStatus, dbProvider.vouches.length),
@@ -715,31 +749,45 @@ class _NotesViewState extends State<NotesView> {
   }
 
   Widget _buildActionableFeedback(Map<String, dynamic>? scoreData) {
-    if (scoreData == null || scoreData['shap_impacts'] == null) return const SizedBox();
+    if (scoreData == null) return const SizedBox();
 
-    final impacts = Map<String, dynamic>.from(scoreData['shap_impacts']);
+    final hasNewFormat = scoreData.containsKey('top_factors');
+    final hasOldFormat = scoreData.containsKey('shap_impacts');
     
-    // Find the feature with the highest positive SHAP value (highest positive = increases default risk = needs most work)
+    if (!hasNewFormat && !hasOldFormat) return const SizedBox();
+
     String worstFeature = "";
     double worstImpact = -100.0;
 
-    impacts.forEach((key, value) {
-      if (value is num && value.toDouble() > worstImpact) {
-        worstImpact = value.toDouble();
-        worstFeature = key;
+    if (hasNewFormat) {
+      final topFactorsList = scoreData['top_factors'] as List<dynamic>? ?? [];
+      for (var factor in topFactorsList) {
+        double impact = (factor['impact'] as num).toDouble();
+        if (impact > worstImpact) {
+          worstImpact = impact;
+          worstFeature = factor['feature'] as String;
+        }
       }
-    });
+    } else {
+      final impacts = Map<String, dynamic>.from(scoreData['shap_impacts']);
+      impacts.forEach((key, value) {
+        if (value is num && value.toDouble() > worstImpact) {
+          worstImpact = value.toDouble();
+          worstFeature = key;
+        }
+      });
+    }
 
     List<Map<String, String>> suggestions = [];
 
     if (worstImpact > 0.01) {
-      if (worstFeature == 'fee_punctuality') {
+      if (worstFeature == 'fee_punctuality' || worstFeature == 'fee_payment_punctuality') {
         suggestions.add({'title': 'Boost your fee punctuality', 'subtitle': 'Pay your college fees and rent on time for the next 2 months. Late payments heavily impact your score.', 'emoji': '📅'});
-      } else if (worstFeature == 'savings_cadence') {
+      } else if (worstFeature == 'savings_cadence' || worstFeature == 'savings_consistency') {
         suggestions.add({'title': 'Save small, save regularly', 'subtitle': 'Your savings pattern is irregular. Try saving just ₹500 every single month consistently.', 'emoji': '🐷'});
-      } else if (worstFeature == 'trust_circle_vouch') {
+      } else if (worstFeature == 'trust_circle_vouch' || worstFeature == 'trust_circle_vouch_score') {
         suggestions.add({'title': 'Grow your Trust Circle', 'subtitle': 'Add more trusted peers or family to your Trust Circle to act as a community guarantee.', 'emoji': '🤝'});
-      } else if (worstFeature == 'DAYS_EMPLOYED') {
+      } else if (worstFeature == 'DAYS_EMPLOYED' || worstFeature == 'gig_income_stability') {
         suggestions.add({'title': 'Gig/Income consistency', 'subtitle': 'Consistent part-time or gig work will stabilize your profile. Keep it up!', 'emoji': '💼'});
       } else {
         suggestions.add({'title': 'Expand Trust Circle', 'subtitle': 'Get 2 more vouches for a boost', 'emoji': '🤝'});

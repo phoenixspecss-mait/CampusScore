@@ -101,4 +101,19 @@ class DatabaseProvider with ChangeNotifier {
     _isLoading = value;
     notifyListeners();
   }
+
+  // Find user by Campus ID
+  Future<Map<String, dynamic>?> findUserByCampusId(String campusId) async {
+    _setLoading(true);
+    try {
+      final result = await _dbService.findUserByCampusId(campusId);
+      _error = null;
+      return result;
+    } catch (e) {
+      _error = e.toString();
+      return null;
+    } finally {
+      _setLoading(false);
+    }
+  }
 }

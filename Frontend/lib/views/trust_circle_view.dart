@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:campusscore/services/db/database_provider.dart';
 import 'package:campusscore/services/auth/auth_service.dart';
@@ -49,7 +50,7 @@ class _TrustCircleViewState extends State<TrustCircleView> {
             TextField(
               controller: _inviteController,
               decoration: InputDecoration(
-                hintText: 'Enter phone number or Campus ID',
+                hintText: 'Enter a peer\'s Campus ID',
                 hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 filled: true,
@@ -78,30 +79,72 @@ class _TrustCircleViewState extends State<TrustCircleView> {
           ElevatedButton(
             onPressed: () async {
               if (_inviteController.text.isEmpty) return;
+              
+              Navigator.of(ctx).pop(); // Close input dialog
+
+              // Show loading dialog
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (loadingCtx) => const AlertDialog(
+                  backgroundColor: Colors.white,
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(color: Color(0xFFFF6B00)),
+                      SizedBox(height: 24),
+                      Text("Looking up Campus ID...", style: TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  )
+                )
+              );
+
+              // Simulate network delay
+              await Future.delayed(const Duration(milliseconds: 1500));
+
+              if (context.mounted) {
+                Navigator.of(context).pop(); // Close loading dialog
+              }
+
               final user = AuthService.firebase().currentUser;
               if (user != null) {
-                // Simulating an accepted invite
-                final newVouch = {
-                  'name': 'Peer (${_inviteController.text})',
-                  'relation': 'Peer / Batchmate',
-                  'score': 600 + Random().nextInt(250), // Random score between 600-850
-                  'status': 'Active Vouch',
-                };
-                await context.read<DatabaseProvider>().addVouch(user.uid, newVouch);
-              }
-              _inviteController.clear();
-              if (context.mounted) {
-                Navigator.of(ctx).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Invite accepted! Added to Trust Circle.")),
-                );
+                final campusId = _inviteController.text.trim();
+                final peerData = await context.read<DatabaseProvider>().findUserByCampusId(campusId);
+                
+                if (peerData != null) {
+                  final newVouch = {
+                    'name': peerData['name'],
+                    'relation': 'Peer / Batchmate',
+                    'score': peerData['score'],
+                    'status': 'Active Vouch',
+                  };
+                  if (context.mounted) {
+                    await context.read<DatabaseProvider>().addVouch(user.uid, newVouch);
+                  }
+                  
+                  _inviteController.clear();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Vouch successfully added to your Trust Circle!")),
+                    );
+                  }
+                } else {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Campus ID not found. Please check the ID and try again."),
+                        backgroundColor: Colors.redAccent,
+                      ),
+                    );
+                  }
+                }
               }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFF6B00),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: const Text("Send Invite", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text("Add Vouch", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -113,6 +156,10 @@ class _TrustCircleViewState extends State<TrustCircleView> {
     final dbProvider = context.watch<DatabaseProvider>();
     final activeVouches = dbProvider.vouches;
     final int trustPoints = activeVouches.length * 20;
+
+    final user = AuthService.firebase().currentUser;
+    final String fullUid = user?.uid ?? "00000000";
+    final String campusId = fullUid.length > 8 ? fullUid.substring(0, 8).toUpperCase() : fullUid.toUpperCase();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -172,6 +219,49 @@ class _TrustCircleViewState extends State<TrustCircleView> {
                   ),
                 ),
               ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            width: double.infinity,
+            color: Colors.white,
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.badge_rounded, color: Colors.blue, size: 32),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Your Shareable Campus ID", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
+                        const SizedBox(height: 4),
+                        Text(
+                          campusId,
+                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.blue, letterSpacing: 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: campusId));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Campus ID copied to clipboard!")),
+                      );
+                    },
+                    icon: const Icon(Icons.copy_rounded, color: Colors.blue),
+                    tooltip: "Copy ID",
+                    style: IconButton.styleFrom(backgroundColor: Colors.white),
+                  )
+                ],
+              ),
             ),
           ),
           Expanded(
