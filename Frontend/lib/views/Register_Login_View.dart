@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:campusscore/services/auth/auth_exceptions.dart';
 import 'package:campusscore/services/auth/auth_service.dart';
 import 'package:campusscore/main.dart'; // For AuthGate
+import 'package:campusscore/views/responsive_layout.dart';
 
 class Register_Login_View extends StatefulWidget {
   const Register_Login_View({super.key});
@@ -121,9 +122,11 @@ class _campusscoreState extends State<Register_Login_View> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
+      body: ResponsiveLayout(
+        maxWidth: 500,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
             const SizedBox(height: 72),
 
             // campusscore Logo Container
@@ -404,6 +407,7 @@ class _campusscoreState extends State<Register_Login_View> {
           ],
         ),
       ),
+      ),
     );
   }
 }
@@ -487,10 +491,12 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
         ),
         iconTheme: const IconThemeData(color: Colors.black),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+      body: ResponsiveLayout(
+        maxWidth: 500,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
             Container(
               width: 80,
               height: 80,
@@ -539,6 +545,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

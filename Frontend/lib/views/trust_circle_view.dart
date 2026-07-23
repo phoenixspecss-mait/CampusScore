@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:campusscore/services/db/database_provider.dart';
 import 'package:campusscore/services/auth/auth_service.dart';
 import 'dart:math';
+import 'package:campusscore/views/responsive_layout.dart';
 
 class TrustCircleView extends StatefulWidget {
   const TrustCircleView({super.key});
@@ -124,9 +125,11 @@ class _TrustCircleViewState extends State<TrustCircleView> {
         elevation: 0,
         centerTitle: false,
       ),
-      body: Column(
-        children: [
-          Container(
+      body: ResponsiveLayout(
+        maxWidth: 800,
+        child: Column(
+          children: [
+            Container(
             padding: const EdgeInsets.all(24),
             width: double.infinity,
             color: const Color(0xFFFF6B00).withOpacity(0.05),
@@ -212,6 +215,7 @@ class _TrustCircleViewState extends State<TrustCircleView> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:campusscore/services/auth/auth_service.dart';
 import 'package:campusscore/services/api/api_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:campusscore/views/profile_setup_view.dart';
+import 'package:campusscore/views/responsive_layout.dart';
 
 class NotesView extends StatefulWidget {
   const NotesView({super.key});
@@ -50,9 +51,11 @@ class _NotesViewState extends State<NotesView> {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50, // Light background
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Padding(
+      body: ResponsiveLayout(
+        maxWidth: 800,
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,6 +93,7 @@ class _NotesViewState extends State<NotesView> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

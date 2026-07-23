@@ -146,10 +146,12 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDesktop = MediaQuery.of(context).size.width >= 800;
+
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
           'CampusScore',
@@ -178,29 +180,62 @@ class _MainLayoutState extends State<MainLayout> {
           ),
         ],
       ),
-      body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        selectedItemColor: const Color(0xFFFF6B00),
-        unselectedItemColor: Colors.grey.shade400,
-        backgroundColor: Colors.white,
-        elevation: 20,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_rounded),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.tune_rounded),
-            label: 'Simulator',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.group_rounded),
-            label: 'Trust Circle',
-          ),
-        ],
-      ),
+      body: isDesktop
+          ? Row(
+              children: [
+                NavigationRail(
+                  backgroundColor: Colors.white,
+                  selectedIndex: _currentIndex,
+                  onDestinationSelected: (index) => setState(() => _currentIndex = index),
+                  labelType: NavigationRailLabelType.all,
+                  selectedIconTheme: const IconThemeData(color: Color(0xFFFF6B00)),
+                  unselectedIconTheme: IconThemeData(color: Colors.grey.shade400),
+                  selectedLabelTextStyle: const TextStyle(color: Color(0xFFFF6B00), fontWeight: FontWeight.bold),
+                  unselectedLabelTextStyle: TextStyle(color: Colors.grey.shade500),
+                  destinations: const [
+                    NavigationRailDestination(
+                      icon: Icon(Icons.dashboard_rounded),
+                      label: Text('Dashboard'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.tune_rounded),
+                      label: Text('Simulator'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.group_rounded),
+                      label: Text('Trust Circle'),
+                    ),
+                  ],
+                ),
+                VerticalDivider(thickness: 1, width: 1, color: Colors.grey.shade200),
+                Expanded(child: _screens[_currentIndex]),
+              ],
+            )
+          : _screens[_currentIndex],
+      bottomNavigationBar: isDesktop 
+          ? null 
+          : BottomNavigationBar(
+              currentIndex: _currentIndex,
+              onTap: (index) => setState(() => _currentIndex = index),
+              selectedItemColor: const Color(0xFFFF6B00),
+              unselectedItemColor: Colors.grey.shade400,
+              backgroundColor: Colors.white,
+              elevation: 20,
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.dashboard_rounded),
+                  label: 'Dashboard',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.tune_rounded),
+                  label: 'Simulator',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.group_rounded),
+                  label: 'Trust Circle',
+                ),
+              ],
+            ),
     );
   }
 }

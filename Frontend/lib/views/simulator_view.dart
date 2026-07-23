@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:campusscore/services/api/api_service.dart';
+import 'package:campusscore/views/responsive_layout.dart';
 
 class SimulatorView extends StatefulWidget {
   const SimulatorView({super.key});
@@ -59,9 +60,11 @@ class _SimulatorViewState extends State<SimulatorView> {
         elevation: 0,
         centerTitle: false,
       ),
-      body: Column(
-        children: [
-          // Projected Score Display
+      body: ResponsiveLayout(
+        maxWidth: 800,
+        child: Column(
+          children: [
+            // Projected Score Display
           Container(
             padding: const EdgeInsets.all(24),
             width: double.infinity,
@@ -153,6 +156,7 @@ class _SimulatorViewState extends State<SimulatorView> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
