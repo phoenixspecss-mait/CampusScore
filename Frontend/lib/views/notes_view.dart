@@ -188,13 +188,6 @@ class _NotesViewState extends State<NotesView> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.grey.shade200),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
             ),
             child: Row(
               children: [
@@ -281,7 +274,7 @@ class _NotesViewState extends State<NotesView> {
         Expanded(
           flex: 1,
           child: Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
@@ -300,7 +293,7 @@ class _NotesViewState extends State<NotesView> {
                 const SizedBox(height: 16),
                 const Text(
                   '3 Habits',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
@@ -332,13 +325,6 @@ class _NotesViewState extends State<NotesView> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
@@ -600,7 +586,8 @@ class _NotesViewState extends State<NotesView> {
   Widget _buildHabitsList({required bool isDesktop}) {
     final List<Widget> children = [
       _buildFactorCard(
-        icon: Icons.home_work_rounded,
+        emoji: '🏠',
+        emojiBgColor: Colors.green.shade50,
         title: 'Rent & Hostel Fees',
         description: 'Paid on time for 4 months',
         status: 'Excellent',
@@ -609,7 +596,8 @@ class _NotesViewState extends State<NotesView> {
       ),
       if (!isDesktop) const SizedBox(height: 12),
       _buildFactorCard(
-        icon: Icons.qr_code_scanner_rounded,
+        emoji: '🧾',
+        emojiBgColor: Colors.blue.shade50,
         title: 'Recurring UPI Payments',
         description: 'Consistent weekly transactions',
         status: 'Good',
@@ -618,7 +606,8 @@ class _NotesViewState extends State<NotesView> {
       ),
       if (!isDesktop) const SizedBox(height: 12),
       _buildFactorCard(
-        icon: Icons.savings_rounded,
+        emoji: '🐷',
+        emojiBgColor: Colors.orange.shade50,
         title: 'Small Savings',
         description: 'Irregular saving patterns detected',
         status: 'Needs Work',
@@ -646,7 +635,8 @@ class _NotesViewState extends State<NotesView> {
   }
 
   Widget _buildFactorCard({
-    required IconData icon,
+    required String emoji,
+    required Color emojiBgColor,
     required String title,
     required String description,
     required String status,
@@ -659,58 +649,59 @@ class _NotesViewState extends State<NotesView> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.shade200),
-        boxShadow: isDesktop ? [] : [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: statusColor, size: 24),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: emojiBgColor,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: const TextStyle(color: Colors.black54, fontSize: 13),
+                child: Text(emoji, style: const TextStyle(fontSize: 20)),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      style: const TextStyle(
+                        color: Colors.black54,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
+          const SizedBox(height: 16),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: statusColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: statusColor.withOpacity(0.2)),
             ),
             child: Text(
               status,
               style: TextStyle(
                 color: statusColor,
-                fontSize: 12,
                 fontWeight: FontWeight.bold,
+                fontSize: 12,
               ),
             ),
           ),
@@ -719,104 +710,57 @@ class _NotesViewState extends State<NotesView> {
     );
   }
 
-  Widget _buildActionableFeedback(Map<String, dynamic>? userScore) {
-    if (userScore == null || userScore['shap_impacts'] == null) {
-      return const Text("Generate your score to see personalized advice.");
+  Widget _buildActionableFeedback(Map<String, dynamic>? scoreData) {
+    if (scoreData == null) return const SizedBox();
+
+    List<Map<String, String>> suggestions = [];
+    int finalScore = scoreData['final_score'] ?? 0;
+
+    if (finalScore < 500) {
+      suggestions.add({'title': 'Start Building History', 'subtitle': 'Pay rent via app to establish history', 'emoji': '📈'});
+      suggestions.add({'title': 'Verify Identity', 'subtitle': 'Complete profile for +50 points', 'emoji': '🛡️'});
+    } else if (finalScore < 700) {
+      suggestions.add({'title': 'Boost your fee punctuality', 'subtitle': 'Pay your college fees and rent on time for the next 2 months. Late payments heavily impact your score.', 'emoji': '📅'});
+      suggestions.add({'title': 'Expand Trust Circle', 'subtitle': 'Get 2 more vouches for a boost', 'emoji': '🤝'});
+    } else {
+      suggestions.add({'title': 'Maintain Streak', 'subtitle': 'Keep up the on-time payments', 'emoji': '🔥'});
     }
 
-    final impacts = Map<String, dynamic>.from(userScore['shap_impacts']);
-    
-    // Find the feature with the highest positive SHAP value (highest positive = increases default risk = needs most work)
-    String worstFeature = "";
-    double worstImpact = -100.0;
-
-    impacts.forEach((key, value) {
-      if (value is double && value > worstImpact) {
-        worstImpact = value;
-        worstFeature = key;
-      }
-    });
-
-    String adviceTitle = 'Keep building your history';
-    String adviceDesc = 'Maintain your current habits to steadily improve your score over time.';
-    IconData adviceIcon = Icons.trending_up_rounded;
-
-    if (worstImpact > 0.01) { // Only show advice if it's actually hurting the score significantly
-      if (worstFeature == 'fee_punctuality') {
-        adviceTitle = 'Boost your fee punctuality';
-        adviceDesc = 'Pay your college fees and rent on time for the next 2 months. Late payments heavily impact your score.';
-        adviceIcon = Icons.event_busy_rounded;
-      } else if (worstFeature == 'savings_cadence') {
-        adviceTitle = 'Save small, save regularly';
-        adviceDesc = 'Your savings pattern is irregular. Try saving just ₹500 every single month consistently.';
-        adviceIcon = Icons.savings_rounded;
-      } else if (worstFeature == 'trust_circle_vouch') {
-        adviceTitle = 'Grow your Trust Circle';
-        adviceDesc = 'Add more trusted peers or family to your Trust Circle to act as a community guarantee.';
-        adviceIcon = Icons.group_add_rounded;
-      } else if (worstFeature == 'DAYS_EMPLOYED') {
-        adviceTitle = 'Gig/Income consistency';
-        adviceDesc = 'Consistent part-time or gig work will stabilize your profile. Keep it up!';
-        adviceIcon = Icons.work_history_rounded;
-      }
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFFFF6B00).withOpacity(0.1),
-            const Color(0xFFFF6B00).withOpacity(0.02),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFFF6B00).withOpacity(0.2)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFF6B00).withOpacity(0.15),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              adviceIcon,
-              color: const Color(0xFFFF6B00),
-              size: 24,
-            ),
+    return Column(
+      children: suggestions.map((s) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF7ED), // Light orange background matching Action Plan mockup
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFFFEDD5)),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  adviceTitle,
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF6B00),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  adviceDesc,
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    fontSize: 14,
-                    height: 1.5,
-                  ),
-                ),
-              ],
-            ),
+                child: Text(s['emoji']!, style: const TextStyle(fontSize: 16)),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                s['title']!,
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                s['subtitle']!,
+                style: const TextStyle(color: Colors.black54, fontSize: 14),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      }).toList(),
     );
   }
 }

@@ -222,7 +222,7 @@ class _MainLayoutState extends State<MainLayout> {
       width: 260,
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(right: BorderSide(color: Colors.grey.shade200)),
+        border: Border(right: BorderSide(color: Colors.grey.shade100, width: 2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,24 +231,15 @@ class _MainLayoutState extends State<MainLayout> {
             padding: const EdgeInsets.all(24.0),
             child: Row(
               children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFF6B00),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'C',
-                      style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                  ),
+                Image.asset(
+                  'assets/images/campusscore_icon.png',
+                  width: 36,
+                  height: 36,
                 ),
                 const SizedBox(width: 12),
                 const Text(
                   'CampusScore',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.black87),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.black87),
                 ),
               ],
             ),
@@ -284,34 +275,32 @@ class _MainLayoutState extends State<MainLayout> {
     final bool isSelected = _currentIndex == index;
     return InkWell(
       onTap: () => setState(() => _currentIndex = index),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        decoration: BoxDecoration(
-          border: Border(
-            left: BorderSide(
-              color: isSelected ? const Color(0xFFFF6B00) : Colors.transparent,
-              width: 4,
-            ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: isSelected ? const Color(0xFFFFEFE5) : Colors.transparent,
           ),
-          color: isSelected ? const Color(0xFFFF6B00).withOpacity(0.05) : Colors.transparent,
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? const Color(0xFFFF6B00) : Colors.grey.shade500,
-              size: 24,
-            ),
-            const SizedBox(width: 16),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? const Color(0xFFFF6B00) : Colors.grey.shade600,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                fontSize: 16,
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: isSelected ? const Color(0xFFFF6B00) : Colors.grey.shade500,
+                size: 22,
               ),
-            ),
-          ],
+              const SizedBox(width: 16),
+              Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? const Color(0xFFFF6B00) : Colors.grey.shade600,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
