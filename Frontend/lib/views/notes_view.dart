@@ -49,7 +49,8 @@ class _NotesViewState extends State<NotesView> {
     final String scoreStatus = currentScore > 700 ? "Excellent" : (currentScore > 500 ? "Growing" : "Needs Work");
     final bool isDesktop = MediaQuery.of(context).size.width >= 800;
 
-    Widget leftSide = Column(
+    // Mobile specific layout pieces
+    Widget mobileLeftSide = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildScoreHeader(currentScore, scoreStatus),
@@ -69,7 +70,7 @@ class _NotesViewState extends State<NotesView> {
       ],
     );
 
-    Widget rightSide = Column(
+    Widget mobileRightSide = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (currentScore == 0) ...[
@@ -84,7 +85,7 @@ class _NotesViewState extends State<NotesView> {
             ),
           ),
           const SizedBox(height: 16),
-          _buildHabitsList(),
+          _buildHabitsList(isDesktop: false),
         ]
       ],
     );
@@ -92,32 +93,217 @@ class _NotesViewState extends State<NotesView> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       body: ResponsiveLayout(
-        maxWidth: 1200,
+        maxWidth: 1400, // Widened for true SaaS desktop layout
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: isDesktop 
-              ? Row(
+              ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(flex: 5, child: leftSide),
-                    const SizedBox(width: 40),
-                    Expanded(flex: 7, child: rightSide),
+                    const Text(
+                      'Financial Overview',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _buildDesktopMetricsRow(currentScore, scoreStatus, dbProvider.vouches.length),
+                    const SizedBox(height: 40),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 8,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Habits & History',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              currentScore == 0 
+                                ? _buildColdStartButton(context, dbProvider)
+                                : _buildHabitsList(isDesktop: true),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 40),
+                        Expanded(
+                          flex: 4,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Action Plan',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              if (currentScore > 0) _buildActionableFeedback(dbProvider.userScore),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 40),
                   ],
                 )
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    leftSide,
+                    mobileLeftSide,
                     const SizedBox(height: 32),
-                    rightSide,
+                    mobileRightSide,
                     const SizedBox(height: 40),
                   ],
                 ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDesktopMetricsRow(int currentScore, String scoreStatus, int vouchCount) {
+    return Row(
+      children: [
+        // Card 1: Score
+        Expanded(
+          flex: 2,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Row(
+              children: [
+                SizedBox(
+                  height: 80,
+                  width: 80,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        value: currentScore / 900,
+                        strokeWidth: 8,
+                        backgroundColor: Colors.grey.shade100,
+                        color: const Color(0xFFFF6B00),
+                        strokeCap: StrokeCap.round,
+                      ),
+                      Text(
+                        currentScore.toString(),
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 24),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Student Credit Score', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 8),
+                    Text(
+                      scoreStatus,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFFFF6B00),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 24),
+        // Card 2: Trust Circle
+        Expanded(
+          flex: 1,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.group_rounded, color: Colors.blue, size: 20),
+                    SizedBox(width: 8),
+                    Text('Trust Circle', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '$vouchCount Active',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 24),
+        // Card 3: Tracked Habits
+        Expanded(
+          flex: 1,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.fact_check_rounded, color: Colors.green, size: 20),
+                    SizedBox(width: 8),
+                    Text('Data Points', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '3 Habits',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -404,7 +590,7 @@ class _NotesViewState extends State<NotesView> {
     }
   }
 
-  Widget _buildHabitsList() {
+  Widget _buildHabitsList({required bool isDesktop}) {
     return Column(
       children: [
         _buildFactorCard(
@@ -413,6 +599,7 @@ class _NotesViewState extends State<NotesView> {
           description: 'Paid on time for 4 months',
           status: 'Excellent',
           statusColor: Colors.green,
+          isDesktop: isDesktop,
         ),
         const SizedBox(height: 12),
         _buildFactorCard(
@@ -421,6 +608,7 @@ class _NotesViewState extends State<NotesView> {
           description: 'Consistent weekly transactions',
           status: 'Good',
           statusColor: Colors.blue,
+          isDesktop: isDesktop,
         ),
         const SizedBox(height: 12),
         _buildFactorCard(
@@ -429,6 +617,7 @@ class _NotesViewState extends State<NotesView> {
           description: 'Irregular saving patterns detected',
           status: 'Needs Work',
           statusColor: Colors.orange,
+          isDesktop: isDesktop,
         ),
       ],
     );
@@ -440,14 +629,15 @@ class _NotesViewState extends State<NotesView> {
     required String description,
     required String status,
     required Color statusColor,
+    required bool isDesktop,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isDesktop ? 20 : 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
+        boxShadow: isDesktop ? [] : [ // Remove shadow on desktop for cleaner grid look
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
             blurRadius: 8,
