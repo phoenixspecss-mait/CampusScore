@@ -17,6 +17,7 @@ class _SimulatorViewState extends State<SimulatorView> {
   double _feePunctuality = 0.8;
 
   int _projectedScore = 0;
+  Map<String, dynamic> _shapImpacts = {};
   bool _isLoading = false;
 
   @override
@@ -38,6 +39,7 @@ class _SimulatorViewState extends State<SimulatorView> {
       if (mounted) {
         setState(() {
           _projectedScore = scoreData['final_score'];
+          _shapImpacts = Map<String, dynamic>.from(scoreData['shap_impacts'] ?? {});
         });
       }
     } catch (e) {
@@ -89,6 +91,8 @@ class _SimulatorViewState extends State<SimulatorView> {
               ],
             ),
           ),
+          
+          if (_shapImpacts.isNotEmpty) _buildShapImpacts(),
           
           Expanded(
             child: ListView(
@@ -157,6 +161,64 @@ class _SimulatorViewState extends State<SimulatorView> {
           ),
         ],
       ),
+      ),
+    );
+  }
+
+  Widget _buildShapImpacts() {
+    // Map internal variable names to readable labels
+    final Map<String, String> featureNames = {
+      'AMT_INCOME_TOTAL': 'Annual Income',
+      'DAYS_EMPLOYED': 'Gig/Employment History',
+      'savings_cadence': 'Savings Regularity',
+      'trust_circle_vouch': 'Trust Circle',
+      'fee_punctuality': 'Fee Punctuality',
+    };
+
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Model Impact Breakdown (SHAP)",
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
+          ),
+          const SizedBox(height: 12),
+          ..._shapImpacts.entries.map((entry) {
+            double impact = (entry.value as num).toDouble();
+            if (impact == 0) return const SizedBox();
+            
+            // Assuming higher SHAP = higher default risk = BAD for score
+            bool isBad = impact > 0;
+            Color color = isBad ? Colors.red : Colors.green;
+            IconData icon = isBad ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded;
+            String sign = impact > 0 ? "+" : "";
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Row(
+                children: [
+                  Icon(icon, color: color, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      featureNames[entry.key] ?? entry.key,
+                      style: const TextStyle(fontSize: 14, color: Colors.black87),
+                    ),
+                  ),
+                  Text(
+                    "$sign${impact.toStringAsFixed(1)} pts",
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+          const Divider(height: 32),
+        ],
       ),
     );
   }

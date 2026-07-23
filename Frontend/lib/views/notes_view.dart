@@ -715,17 +715,35 @@ class _NotesViewState extends State<NotesView> {
   }
 
   Widget _buildActionableFeedback(Map<String, dynamic>? scoreData) {
-    if (scoreData == null) return const SizedBox();
+    if (scoreData == null || scoreData['shap_impacts'] == null) return const SizedBox();
+
+    final impacts = Map<String, dynamic>.from(scoreData['shap_impacts']);
+    
+    // Find the feature with the highest positive SHAP value (highest positive = increases default risk = needs most work)
+    String worstFeature = "";
+    double worstImpact = -100.0;
+
+    impacts.forEach((key, value) {
+      if (value is num && value.toDouble() > worstImpact) {
+        worstImpact = value.toDouble();
+        worstFeature = key;
+      }
+    });
 
     List<Map<String, String>> suggestions = [];
-    int finalScore = scoreData['final_score'] ?? 0;
 
-    if (finalScore < 500) {
-      suggestions.add({'title': 'Start Building History', 'subtitle': 'Pay rent via app to establish history', 'emoji': '📈'});
-      suggestions.add({'title': 'Verify Identity', 'subtitle': 'Complete profile for +50 points', 'emoji': '🛡️'});
-    } else if (finalScore < 700) {
-      suggestions.add({'title': 'Boost your fee punctuality', 'subtitle': 'Pay your college fees and rent on time for the next 2 months. Late payments heavily impact your score.', 'emoji': '📅'});
-      suggestions.add({'title': 'Expand Trust Circle', 'subtitle': 'Get 2 more vouches for a boost', 'emoji': '🤝'});
+    if (worstImpact > 0.01) {
+      if (worstFeature == 'fee_punctuality') {
+        suggestions.add({'title': 'Boost your fee punctuality', 'subtitle': 'Pay your college fees and rent on time for the next 2 months. Late payments heavily impact your score.', 'emoji': '📅'});
+      } else if (worstFeature == 'savings_cadence') {
+        suggestions.add({'title': 'Save small, save regularly', 'subtitle': 'Your savings pattern is irregular. Try saving just ₹500 every single month consistently.', 'emoji': '🐷'});
+      } else if (worstFeature == 'trust_circle_vouch') {
+        suggestions.add({'title': 'Grow your Trust Circle', 'subtitle': 'Add more trusted peers or family to your Trust Circle to act as a community guarantee.', 'emoji': '🤝'});
+      } else if (worstFeature == 'DAYS_EMPLOYED') {
+        suggestions.add({'title': 'Gig/Income consistency', 'subtitle': 'Consistent part-time or gig work will stabilize your profile. Keep it up!', 'emoji': '💼'});
+      } else {
+        suggestions.add({'title': 'Expand Trust Circle', 'subtitle': 'Get 2 more vouches for a boost', 'emoji': '🤝'});
+      }
     } else {
       suggestions.add({'title': 'Maintain Streak', 'subtitle': 'Keep up the on-time payments', 'emoji': '🔥'});
     }
