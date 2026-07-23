@@ -38,8 +38,13 @@ class _SimulatorViewState extends State<SimulatorView> {
       );
       if (mounted) {
         setState(() {
-          _projectedScore = scoreData['final_score'];
-          _shapImpacts = Map<String, dynamic>.from(scoreData['shap_impacts'] ?? {});
+          _projectedScore = scoreData['score'] ?? 0;
+          
+          final topFactorsList = scoreData['top_factors'] as List<dynamic>? ?? [];
+          _shapImpacts = {
+            for (var factor in topFactorsList) 
+              factor['feature'] as String: factor['impact']
+          };
         });
       }
     } catch (e) {
@@ -169,10 +174,16 @@ class _SimulatorViewState extends State<SimulatorView> {
     // Map internal variable names to readable labels
     final Map<String, String> featureNames = {
       'AMT_INCOME_TOTAL': 'Annual Income',
-      'DAYS_EMPLOYED': 'Gig/Employment History',
-      'savings_cadence': 'Savings Regularity',
-      'trust_circle_vouch': 'Trust Circle',
-      'fee_punctuality': 'Fee Punctuality',
+      'gig_income_stability': 'Gig/Employment Stability',
+      'savings_consistency': 'Savings Regularity',
+      'trust_circle_vouch_score': 'Trust Circle',
+      'fee_payment_punctuality': 'Fee Punctuality',
+      'subscription_regularity': 'Subscription Punctuality',
+      'AGE_YEARS': 'Age',
+      'AMT_CREDIT': 'Prior Loan Amount',
+      'on_time_repayment_rate': 'Repayment History',
+      'is_returning_applicant': 'Returning Applicant',
+      'NAME_EDUCATION_TYPE': 'Education Type'
     };
 
     return Container(
