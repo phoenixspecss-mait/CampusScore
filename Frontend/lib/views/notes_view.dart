@@ -192,22 +192,26 @@ class _NotesViewState extends State<NotesView> {
             child: Row(
               children: [
                 SizedBox(
-                  height: 64, // Shrunk from 80 to 64
-                  width: 64,
+                  height: 72,
+                  width: 72,
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      CircularProgressIndicator(
-                        value: currentScore / 900,
-                        strokeWidth: 8,
-                        backgroundColor: Colors.grey.shade100,
-                        color: const Color(0xFFFF6B00),
-                        strokeCap: StrokeCap.round,
+                      SizedBox(
+                        height: 72,
+                        width: 72,
+                        child: CircularProgressIndicator(
+                          value: currentScore / 900,
+                          strokeWidth: 6,
+                          backgroundColor: Colors.grey.shade100,
+                          color: const Color(0xFFFF6B00),
+                          strokeCap: StrokeCap.round,
+                        ),
                       ),
                       Text(
                         currentScore.toString(),
                         style: const TextStyle(
-                          fontSize: 24,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
