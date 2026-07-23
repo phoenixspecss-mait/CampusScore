@@ -16,9 +16,31 @@ class _SimulatorViewState extends State<SimulatorView> {
   double _trustCircle = 1.0;
   double _feePunctuality = 0.8;
 
-  int _projectedScore = 0;
+  int _baseScore = 0;
+  
+  // Track values from the last successful API call
+  double _lastApiIncome = 45000;
+  double _lastApiDays = 300;
+  double _lastApiCadence = 0.5;
+  double _lastApiTrust = 1.0;
+  double _lastApiFee = 0.8;
+
   Map<String, dynamic> _shapImpacts = {};
   bool _isLoading = false;
+
+  int get _projectedScore {
+    if (_baseScore == 0) return 0;
+    
+    // Calculate a small "smoothing" bonus based on the delta since the last API call
+    double incomeDelta = (_income - _lastApiIncome) / 200000.0 * 5.0;
+    double daysDelta = (_daysEmployed - _lastApiDays) / 1000.0 * 15.0;
+    double savingsDelta = (_savingsCadence - _lastApiCadence) / 1.0 * 10.0;
+    double trustDelta = (_trustCircle - _lastApiTrust) / 3.0 * 20.0;
+    double feeDelta = (_feePunctuality - _lastApiFee) / 1.0 * 15.0;
+    
+    int smoothingBonus = (incomeDelta + daysDelta + savingsDelta + trustDelta + feeDelta).round();
+    return _baseScore + smoothingBonus;
+  }
 
   @override
   void initState() {
@@ -38,7 +60,14 @@ class _SimulatorViewState extends State<SimulatorView> {
       );
       if (mounted) {
         setState(() {
-          _projectedScore = scoreData['score'] ?? 0;
+          _baseScore = scoreData['score'] ?? 0;
+          
+          // Sync the tracking variables to the current state since the API has returned
+          _lastApiIncome = _income;
+          _lastApiDays = _daysEmployed;
+          _lastApiCadence = _savingsCadence;
+          _lastApiTrust = _trustCircle;
+          _lastApiFee = _feePunctuality;
           
           final topFactorsList = scoreData['top_factors'] as List<dynamic>? ?? [];
           _shapImpacts = {
