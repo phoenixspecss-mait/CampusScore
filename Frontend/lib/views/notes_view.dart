@@ -53,6 +53,25 @@ class _NotesViewState extends State<NotesView> {
     Widget mobileLeftSide = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Expanded(
+              child: Text(
+                'Financial Overview',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.black87, letterSpacing: -0.5),
+              ),
+            ),
+            IconButton(
+              onPressed: dbProvider.isLoading ? null : () => _pickAndUploadStatement(context, dbProvider),
+              icon: const Icon(Icons.upload_file_rounded, color: Color(0xFFFF6B00)),
+              style: IconButton.styleFrom(
+                backgroundColor: const Color(0xFFFF6B00).withOpacity(0.1),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
         _buildScoreHeader(currentScore, scoreStatus),
         if (currentScore > 0) ...[
           const SizedBox(height: 32),
@@ -102,14 +121,29 @@ class _NotesViewState extends State<NotesView> {
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Financial Overview',
-                      style: TextStyle(
-                        fontSize: 36, // Scaled up typography for desktop
-                        fontWeight: FontWeight.w800,
-                        color: Colors.black87,
-                        letterSpacing: -0.5,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Financial Overview',
+                          style: TextStyle(
+                            fontSize: 36, // Scaled up typography for desktop
+                            fontWeight: FontWeight.w800,
+                            color: Colors.black87,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: dbProvider.isLoading ? null : () => _pickAndUploadStatement(context, dbProvider),
+                          icon: const Icon(Icons.upload_file_rounded, color: Colors.white),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFF6B00),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          label: const Text("Upload Statement", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 32),
                     _buildDesktopMetricsRow(currentScore, scoreStatus, dbProvider.vouches.length),
