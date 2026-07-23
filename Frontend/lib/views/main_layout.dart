@@ -146,7 +146,7 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDesktop = MediaQuery.of(context).size.width >= 800;
+    final bool isDesktop = MediaQuery.of(context).size.width >= 1024;
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
@@ -185,90 +185,7 @@ class _MainLayoutState extends State<MainLayout> {
       body: isDesktop
           ? Row(
               children: [
-                NavigationRail(
-                  backgroundColor: Colors.white,
-                  extended: MediaQuery.of(context).size.width >= 1000,
-                  minExtendedWidth: 200,
-                  leading: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFF6B00),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'C',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (MediaQuery.of(context).size.width >= 1000) ...[
-                          const SizedBox(width: 12),
-                          const Text(
-                            'CampusScore',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ]
-                      ],
-                    ),
-                  ),
-                  selectedIndex: _currentIndex,
-                  onDestinationSelected: (index) => setState(() => _currentIndex = index),
-                  labelType: NavigationRailLabelType.all,
-                  selectedIconTheme: const IconThemeData(color: Color(0xFFFF6B00)),
-                  unselectedIconTheme: IconThemeData(color: Colors.grey.shade400),
-                  selectedLabelTextStyle: const TextStyle(color: Color(0xFFFF6B00), fontWeight: FontWeight.bold),
-                  unselectedLabelTextStyle: TextStyle(color: Colors.grey.shade500),
-                  destinations: const [
-                    NavigationRailDestination(
-                      icon: Icon(Icons.dashboard_rounded),
-                      label: Text('Dashboard'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.tune_rounded),
-                      label: Text('Simulator'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.group_rounded),
-                      label: Text('Trust Circle'),
-                    ),
-                  ],
-                  trailing: Expanded(
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 24.0),
-                        child: GestureDetector(
-                          onTap: () => _showProfileBottomSheet(context),
-                          child: CircleAvatar(
-                            radius: 20,
-                            backgroundColor: const Color(0xFFFF6B00).withOpacity(0.15),
-                            child: const Icon(
-                              Icons.person_rounded,
-                              color: Color(0xFFFF6B00),
-                              size: 24,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                VerticalDivider(thickness: 1, width: 1, color: Colors.grey.shade200),
+                _buildDesktopSidebar(context),
                 Expanded(child: _screens[_currentIndex]),
               ],
             )
@@ -297,6 +214,106 @@ class _MainLayoutState extends State<MainLayout> {
                 ),
               ],
             ),
+    );
+  }
+
+  Widget _buildDesktopSidebar(BuildContext context) {
+    return Container(
+      width: 260,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(right: BorderSide(color: Colors.grey.shade200)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF6B00),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'C',
+                      style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'CampusScore',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.black87),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildSidebarItem(icon: Icons.dashboard_rounded, label: 'Dashboard', index: 0),
+          _buildSidebarItem(icon: Icons.tune_rounded, label: 'Simulator', index: 1),
+          _buildSidebarItem(icon: Icons.group_rounded, label: 'Trust Circle', index: 2),
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: GestureDetector(
+              onTap: () => _showProfileBottomSheet(context),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: const Color(0xFFFF6B00).withOpacity(0.15),
+                    child: const Icon(Icons.person_rounded, color: Color(0xFFFF6B00), size: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text('My Profile', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black87)),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSidebarItem({required IconData icon, required String label, required int index}) {
+    final bool isSelected = _currentIndex == index;
+    return InkWell(
+      onTap: () => setState(() => _currentIndex = index),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(
+              color: isSelected ? const Color(0xFFFF6B00) : Colors.transparent,
+              width: 4,
+            ),
+          ),
+          color: isSelected ? const Color(0xFFFF6B00).withOpacity(0.05) : Colors.transparent,
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? const Color(0xFFFF6B00) : Colors.grey.shade500,
+              size: 24,
+            ),
+            const SizedBox(width: 16),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? const Color(0xFFFF6B00) : Colors.grey.shade600,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

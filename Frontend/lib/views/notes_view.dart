@@ -47,7 +47,7 @@ class _NotesViewState extends State<NotesView> {
     final dbProvider = context.watch<DatabaseProvider>();
     final int currentScore = dbProvider.userScore?['final_score'] ?? 0;
     final String scoreStatus = currentScore > 700 ? "Excellent" : (currentScore > 500 ? "Growing" : "Needs Work");
-    final bool isDesktop = MediaQuery.of(context).size.width >= 800;
+    final bool isDesktop = MediaQuery.of(context).size.width >= 1024;
 
     // Mobile specific layout pieces
     Widget mobileLeftSide = Column(
@@ -93,7 +93,7 @@ class _NotesViewState extends State<NotesView> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       body: ResponsiveLayout(
-        maxWidth: 1400, // Widened for true SaaS desktop layout
+        maxWidth: 1300, // True SaaS desktop maximum width constraint
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Padding(
@@ -105,13 +105,13 @@ class _NotesViewState extends State<NotesView> {
                     const Text(
                       'Financial Overview',
                       style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 36, // Scaled up typography for desktop
+                        fontWeight: FontWeight.w800,
                         color: Colors.black87,
                         letterSpacing: -0.5,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 32),
                     _buildDesktopMetricsRow(currentScore, scoreStatus, dbProvider.vouches.length),
                     const SizedBox(height: 40),
                     Row(
@@ -183,17 +183,24 @@ class _NotesViewState extends State<NotesView> {
         Expanded(
           flex: 2,
           child: Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.grey.shade200),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Row(
               children: [
                 SizedBox(
-                  height: 80,
-                  width: 80,
+                  height: 64, // Shrunk from 80 to 64
+                  width: 64,
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
@@ -591,36 +598,51 @@ class _NotesViewState extends State<NotesView> {
   }
 
   Widget _buildHabitsList({required bool isDesktop}) {
-    return Column(
-      children: [
-        _buildFactorCard(
-          icon: Icons.home_work_rounded,
-          title: 'Rent & Hostel Fees',
-          description: 'Paid on time for 4 months',
-          status: 'Excellent',
-          statusColor: Colors.green,
-          isDesktop: isDesktop,
-        ),
-        const SizedBox(height: 12),
-        _buildFactorCard(
-          icon: Icons.qr_code_scanner_rounded,
-          title: 'Recurring UPI Payments',
-          description: 'Consistent weekly transactions',
-          status: 'Good',
-          statusColor: Colors.blue,
-          isDesktop: isDesktop,
-        ),
-        const SizedBox(height: 12),
-        _buildFactorCard(
-          icon: Icons.savings_rounded,
-          title: 'Small Savings',
-          description: 'Irregular saving patterns detected',
-          status: 'Needs Work',
-          statusColor: Colors.orange,
-          isDesktop: isDesktop,
-        ),
-      ],
-    );
+    final List<Widget> children = [
+      _buildFactorCard(
+        icon: Icons.home_work_rounded,
+        title: 'Rent & Hostel Fees',
+        description: 'Paid on time for 4 months',
+        status: 'Excellent',
+        statusColor: Colors.green,
+        isDesktop: isDesktop,
+      ),
+      if (!isDesktop) const SizedBox(height: 12),
+      _buildFactorCard(
+        icon: Icons.qr_code_scanner_rounded,
+        title: 'Recurring UPI Payments',
+        description: 'Consistent weekly transactions',
+        status: 'Good',
+        statusColor: Colors.blue,
+        isDesktop: isDesktop,
+      ),
+      if (!isDesktop) const SizedBox(height: 12),
+      _buildFactorCard(
+        icon: Icons.savings_rounded,
+        title: 'Small Savings',
+        description: 'Irregular saving patterns detected',
+        status: 'Needs Work',
+        statusColor: Colors.orange,
+        isDesktop: isDesktop,
+      ),
+    ];
+
+    if (isDesktop) {
+      return Wrap(
+        spacing: 16,
+        runSpacing: 16,
+        children: children.map((w) {
+          // If it's a SizedBox, return empty for Wrap
+          if (w is SizedBox) return const SizedBox.shrink();
+          return ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 360),
+            child: w,
+          );
+        }).toList(),
+      );
+    }
+
+    return Column(children: children);
   }
 
   Widget _buildFactorCard({
@@ -637,7 +659,7 @@ class _NotesViewState extends State<NotesView> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.shade200),
-        boxShadow: isDesktop ? [] : [ // Remove shadow on desktop for cleaner grid look
+        boxShadow: isDesktop ? [] : [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
             blurRadius: 8,

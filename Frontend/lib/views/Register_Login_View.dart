@@ -406,7 +406,7 @@ class _campusscoreState extends State<Register_Login_View> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDesktop = MediaQuery.of(context).size.width >= 800;
+    final bool isDesktop = MediaQuery.of(context).size.width >= 1024;
     final form = _buildForm();
 
     if (!isDesktop) {
