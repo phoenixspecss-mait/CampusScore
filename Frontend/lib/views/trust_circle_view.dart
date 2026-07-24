@@ -130,9 +130,10 @@ class _TrustCircleViewState extends State<TrustCircleView> {
                   }
                 } else {
                   if (context.mounted) {
+                    final dbError = context.read<DatabaseProvider>().error;
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Campus ID not found. Please check the ID and try again."),
+                      SnackBar(
+                        content: Text(dbError != null ? "Error: $dbError" : "Campus ID not found. Please check the ID and try again."),
                         backgroundColor: Colors.redAccent,
                       ),
                     );
