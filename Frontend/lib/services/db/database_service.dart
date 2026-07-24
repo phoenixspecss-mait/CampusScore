@@ -76,36 +76,38 @@ class DatabaseService {
     }
   }
 
-  // Find a user by their Campus ID (first 8 chars of UID)
   Future<Map<String, dynamic>?> findUserByCampusId(String campusId) async {
     try {
-      final snapshot = await _db.ref('users')
-          .orderByKey()
-          .startAt(campusId)
-          .endAt('${campusId}\uf8ff')
-          .limitToFirst(1)
-          .get();
+      // For demo/hackathon purposes, we fetch users and match case-insensitively locally.
+      // This ensures that even if users type the ID in all caps, it will find the correct mixed-case UID.
+      final snapshot = await _db.ref('users').get();
       
       if (snapshot.exists) {
         final data = snapshot.value as Map<dynamic, dynamic>;
-        final uid = data.keys.first;
-        final userData = data[uid] as Map<dynamic, dynamic>;
+        final targetUpper = campusId.toUpperCase();
         
-        String name = "Peer ($campusId)";
-        if (userData['profile'] != null) {
-          name = userData['profile']['name'] ?? name;
+        for (var key in data.keys) {
+          final String uidStr = key.toString();
+          if (uidStr.toUpperCase().startsWith(targetUpper)) {
+            final userData = data[key] as Map<dynamic, dynamic>;
+            
+            String name = "Peer (${uidStr.substring(0, 8).toUpperCase()})";
+            if (userData['profile'] != null) {
+              name = userData['profile']['name'] ?? name;
+            }
+            
+            int score = 400; // default score if none found
+            if (userData['score'] != null) {
+              score = userData['score']['score'] ?? userData['score']['final_score'] ?? score;
+            }
+            
+            return {
+              'uid': uidStr,
+              'name': name,
+              'score': score,
+            };
+          }
         }
-        
-        int score = 400; // default score if none found
-        if (userData['score'] != null) {
-          score = userData['score']['score'] ?? userData['score']['final_score'] ?? score;
-        }
-        
-        return {
-          'uid': uid,
-          'name': name,
-          'score': score,
-        };
       }
       return null;
     } catch (e) {
