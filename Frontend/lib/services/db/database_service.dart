@@ -81,8 +81,8 @@ class DatabaseService {
     try {
       final snapshot = await _db.ref('users')
           .orderByKey()
-          .startAt(campusId.toUpperCase())
-          .endAt('${campusId.toUpperCase()}\uf8ff')
+          .startAt(campusId)
+          .endAt('${campusId}\uf8ff')
           .limitToFirst(1)
           .get();
       
@@ -91,7 +91,7 @@ class DatabaseService {
         final uid = data.keys.first;
         final userData = data[uid] as Map<dynamic, dynamic>;
         
-        String name = "Peer (${campusId.toUpperCase()})";
+        String name = "Peer ($campusId)";
         if (userData['profile'] != null) {
           name = userData['profile']['name'] ?? name;
         }

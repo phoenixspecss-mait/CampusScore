@@ -159,7 +159,7 @@ class _TrustCircleViewState extends State<TrustCircleView> {
 
     final user = AuthService.firebase().currentUser;
     final String fullUid = user?.uid ?? "00000000";
-    final String campusId = fullUid.length > 8 ? fullUid.substring(0, 8).toUpperCase() : fullUid.toUpperCase();
+    final String campusId = fullUid.length > 8 ? fullUid.substring(0, 8) : fullUid;
 
     return Scaffold(
       backgroundColor: Colors.white,
