@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:campusscore/services/db/database_provider.dart';
 import 'package:campusscore/services/auth/auth_service.dart';
+import 'package:campusscore/services/api/api_service.dart';
 import 'dart:math';
 import 'package:campusscore/views/responsive_layout.dart';
 
@@ -119,7 +120,28 @@ class _TrustCircleViewState extends State<TrustCircleView> {
                     'status': 'Active Vouch',
                   };
                   if (context.mounted) {
-                    await context.read<DatabaseProvider>().addVouch(user.uid, newVouch);
+                    final dbProvider = context.read<DatabaseProvider>();
+                    await dbProvider.addVouch(user.uid, newVouch);
+                    
+                    // Recalculate score with new vouch count
+                    try {
+                      final existingScore = dbProvider.userScore;
+                      final extractedData = existingScore?['extracted_data'] as Map<String, dynamic>?;
+                      
+                      Map<String, dynamic> newScoreData;
+                      if (extractedData != null) {
+                         newScoreData = await ApiService().updateTrustScore(extractedData, dbProvider.vouches.length);
+                         newScoreData['extracted_data'] = extractedData; // preserve it
+                      } else {
+                         newScoreData = await ApiService().calculateScore(
+                           amtIncomeTotal: 0, daysEmployed: 0, savingsCadence: 0.0,
+                           trustCircleVouch: dbProvider.vouches.length.toDouble(), feePunctuality: 0.0
+                         );
+                      }
+                      await dbProvider.saveUserScore(user.uid, newScoreData);
+                    } catch (e) {
+                      debugPrint("Failed to recalculate score: $e");
+                    }
                   }
                   
                   _inviteController.clear();

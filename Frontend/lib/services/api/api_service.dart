@@ -50,6 +50,30 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> updateTrustScore(Map<String, dynamic> existingData, int vouchCount) async {
+    final url = Uri.parse('$_baseUrl/simulate');
+    try {
+      // Create a copy of existing data and update trust circle vouch score
+      // Backend expects 0-100 scale, we map vouchCount (0-3+) to 0-100
+      final requestData = Map<String, dynamic>.from(existingData);
+      requestData['trust_circle_vouch_score'] = (vouchCount / 3.0) * 100;
+      
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(requestData),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to update score: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error updating score: $e');
+    }
+  }
+
   Future<Map<String, dynamic>> uploadStatement({
     required List<int> fileBytes,
     required String fileName,
